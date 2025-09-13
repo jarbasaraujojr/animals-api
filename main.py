@@ -24,7 +24,7 @@ def get_animals():
         cur = conn.cursor()
 
         # Execute a consulta SQL para buscar todos os animais
-        cur.execute("SELECT name, species FROM animals")
+        cur.execute("SELECT * FROM animals_view")
         animals = cur.fetchall()
 
         # Feche o cursor e a conexão
@@ -42,4 +42,5 @@ def get_animals():
 
 @app.get("/")
 def read_root():
+
     return {"message": "Welcome to the Animal API!"}
