@@ -34,9 +34,18 @@ def get_animals():
         # Transforme o resultado em uma lista de dicionários
         animal_list = []
         for animal in animals:
-            animal_list.append({"name": animal[0], "species": animal[1]})
+            animal_list.append({"name": animal[1], 
+                                "species": animal[5],
+                                "sex": animal[6],
+                                "size": animal[7],
+                                "color": animal[8],
+                                "status": animal[4],
+                                "birth_date": animal[3],
+                                "kennel": animal[9],
+                                "picture_url": animal[10]
+                               })
 
-        return {"animals": animals}
+        return {"animals": animal_list}
     except Exception as e:
         return {"error": str(e)}
 
@@ -44,4 +53,5 @@ def get_animals():
 def read_root():
 
     return {"message": "Welcome to the Animal API!"}
+
 
