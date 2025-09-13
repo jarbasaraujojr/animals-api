@@ -36,7 +36,7 @@ def get_animals():
         for animal in animals:
             animal_list.append({"name": animal[0], "species": animal[1]})
 
-        return {"animals": animal_list}
+        return {"animals": animals}
     except Exception as e:
         return {"error": str(e)}
 
@@ -44,3 +44,4 @@ def get_animals():
 def read_root():
 
     return {"message": "Welcome to the Animal API!"}
+
