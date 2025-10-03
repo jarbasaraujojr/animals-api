@@ -2,9 +2,7 @@ import os
 from fastapi import FastAPI, HTTPException
 from supabase import create_client, Client
 
-# =========================
-# CONFIGURAÇÃO SUPABASE
-# =========================
+# Carrega variáveis de ambiente
 SUPABASE_URL = os.getenv("SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_KEY")
 
@@ -16,17 +14,10 @@ app = FastAPI(title="Kaniu API", version="1.0")
 # =========================
 # LISTAGEM DE ANIMAIS
 # =========================
-@app.get("/api/animais")
-def listar_animais():
-    """
-    Retorna a lista básica de animais para exibição em cards ou listagens.
-    """
-    response = supabase.table("animais") \
-        .select(
-            "animal_id, nome, foto, nascimento, especie, genero, porte, raça, "
-            "falecido, castrado, adotado, internado, desaparecido"
-        ) \
-        .order("nome") \
+@app.get("/api/animals")
+def list_animals():
+    response = supabase.table("animals") \
+        .select("id, name, profile_picture_url, birth_date, species_id, gender_id, size_id, breed_id, deceased, castrated, adopted, hospitalized, missing") \
         .execute()
 
     if not response.data:
@@ -38,64 +29,41 @@ def listar_animais():
 # =========================
 # DETALHES DO ANIMAL
 # =========================
-@app.get("/api/animais/{animal_id}")
-def detalhes_animal(animal_id: str):
-    """
-    Retorna os detalhes completos de um animal específico.
-    """
-    # Tabela principal
-    dados_principais = supabase.table("animais") \
-        .select(
-            "animal_id, nome, nascimento, especie, genero, porte, raça, cor, pelagem, "
-            "falecido, castrado, desaparecido, vacinado, vermifugado, desparasitado, "
-            "peso, comprimento, altura, torax, pescoço, faixaetaria, foto, adotado, internado"
-        ) \
-        .eq("animal_id", animal_id) \
+@app.get("/api/animals/{animal_id}")
+def get_animal(animal_id: str):
+    response = supabase.table("animals") \
+        .select("id, name, description, profile_picture_url, birth_date, species_id, gender_id, size_id, breed_id, castrated, adopted, hospitalized, deceased") \
+        .eq("id", animal_id) \
         .single() \
         .execute()
 
-    if not dados_principais.data:
+    if not response.data:
         raise HTTPException(status_code=404, detail="Animal não encontrado")
 
-    # Descrição (tabela separada)
-    descricao = supabase.table("animais_descricao") \
-        .select("descricao") \
-        .eq("animal", animal_id) \
-        .single() \
-        .execute()
-
-    resultado = dados_principais.data
-    resultado["descricao"] = descricao.data["descricao"] if descricao.data else None
-
-    return resultado
+    return response.data
 
 
 # =========================
 # RESUMO DO ANIMAL
 # =========================
-@app.get("/api/animais/{animal_id}/resumo")
+@app.get("/api/animals/{animal_id}/resumo")
 def resumo_animal(animal_id: str):
-    """
-    Retorna dados resumidos do animal — última pesagem, última vacinação, etc.
-    """
-
-    # Última pesagem
-    pesagem = supabase.table("pesagens") \
-        .select("data, peso") \
-        .eq("animal", animal_id) \
-        .order("data", desc=True) \
+    # Exemplo: pega a última pesagem e vacinação
+    pesagem = supabase.table("animal_weights") \
+        .select("date_time, value") \
+        .eq("animal_id", animal_id) \
+        .order("date_time", desc=True) \
         .limit(1) \
         .execute()
 
-    # Última imunização
-    imunizacao = supabase.table("imunizacao") \
-        .select("id, tipo, criacao, observacao") \
-        .eq("animal", animal_id) \
-        .order("criacao", desc=True) \
+    vacinacao = supabase.table("imunizacoes") \
+        .select("*") \
+        .eq("animal_id", animal_id) \
+        .order("data_exibicao", desc=True) \
         .limit(1) \
         .execute()
 
     return {
-        "ultima_pesagem": pesagem.data[0] if pesagem.data else None,
-        "ultima_imunizacao": imunizacao.data[0] if imunizacao.data else None
+        "ultimo_peso": pesagem.data[0] if pesagem.data else None,
+        "ultima_vacinacao": vacinacao.data[0] if vacinacao.data else None
     }
