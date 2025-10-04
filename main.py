@@ -16,9 +16,7 @@ app = FastAPI(title="Kaniu API", version="1.0")
 # =========================
 @app.get("/api/animals")
 def list_animals():
-    response = supabase.table("animals") \
-        .select("id, name, profile_picture_url, birth_date, species_id, gender_id, size_id, breed_id, deceased, castrated, adopted, hospitalized, missing") \
-        .execute()
+    response = supabase.table("animals_view").select("*").execute()
 
     if not response.data:
         raise HTTPException(status_code=404, detail="Nenhum animal encontrado")
